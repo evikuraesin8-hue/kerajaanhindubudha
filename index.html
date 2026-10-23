@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jejak Dharma Nusantara</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f3fb;--card:#fff;--tx:#34324a;--mu:#76738f;--c1:#d3e6f8;--c2:#fadbe6;--c3:#d8f0dc;--c4:#fdeab9;--ac:#7e6fd8;--ok:#c2ead0;--no:#f7c8c8;--bd:#e3def2}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1c2e;--card:#2a2842;--tx:#ece9f8;--mu:#aaa6c6;--c1:#2d4561;--c2:#5a3a4e;--c3:#2e5242;--c4:#5e5131;--ac:#aa9df7;--ok:#2f6a47;--no:#7a3b3b;--bd:#403d5c}}
+:root[data-theme="dark"]{--bg:#1e1c2e;--card:#2a2842;--tx:#ece9f8;--mu:#aaa6c6;--c1:#2d4561;--c2:#5a3a4e;--c3:#2e5242;--c4:#5e5131;--ac:#aa9df7;--ok:#2f6a47;--no:#7a3b3b;--bd:#403d5c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 "Trebuchet MS","Segoe UI",system-ui,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:14px}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
+h1{font:700 1.5rem/1.2 Georgia,"Times New Roman",serif;margin:0}
+h2{font:700 1.15rem/1.4 Georgia,serif;margin:.2em 0 .8em}
+.hud{display:flex;gap:8px;font-size:.9rem}
+.hud span{background:var(--card);border:1px solid var(--bd);border-radius:999px;padding:3px 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin-bottom:12px}
+.mu{color:var(--mu);font-size:.9rem;margin:.3em 0}
+.map{display:grid;gap:10px}
+.node{display:flex;gap:12px;align-items:center;border-radius:16px;padding:14px;border:2px solid transparent;text-align:left;width:100%;cursor:pointer;color:var(--tx);font:inherit}
+.node .ic{font-size:2rem}
+.node.lock{opacity:.5;cursor:not-allowed}
+.node.done{border-color:var(--ac)}
+.n0{background:var(--c1)}.n1{background:var(--c2)}.n2{background:var(--c3)}.n3{background:var(--c4)}
+button{font:inherit;color:var(--tx);cursor:pointer}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.opt{display:block;width:100%;text-align:left;background:var(--bg);border:2px solid var(--bd);border-radius:12px;padding:10px 12px;margin:6px 0}
+.row .opt{display:inline-block;width:auto;margin:4px 6px 0 0}
+.opt.sel{border-color:var(--ac);background:var(--c1)}
+.opt.used{opacity:.45}
+.opt.ok{background:var(--ok);border-color:var(--ok)}
+.opt.no{background:var(--no);border-color:var(--no)}
+.pri{background:var(--ac);color:#fff;border:0;border-radius:999px;padding:10px 22px;font-weight:700}
+.sec{background:transparent;border:2px solid var(--bd);border-radius:999px;padding:8px 18px}
+#act{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chip{display:inline-block;background:var(--c4);border:2px solid var(--bd);border-radius:10px;padding:5px 10px;margin:4px;cursor:grab}
+.chip.sel{border-color:var(--ac)}
+.pool{min-height:44px;padding:6px;border:2px dashed var(--bd);border-radius:12px;margin-bottom:10px}
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.bin{background:var(--c1);border-radius:12px;padding:8px;min-height:90px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seq{padding-left:22px}
+table{border-collapse:collapse;width:100%;font-size:.9rem;margin:8px 0;display:block;overflow-x:auto}
+td,th{border:1px solid var(--bd);padding:6px 8px;text-align:left}
+textarea{width:100%;min-height:90px;border:2px solid var(--bd);border-radius:12px;padding:10px;background:var(--bg);color:var(--tx);font:inherit}
+.rb{display:block;margin:4px 0}
+.lock-ui{pointer-events:none}
+#fb{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--c3)}
+#fb:empty{display:none}
+.big{font:700 2rem Georgia,serif;margin:.2em 0}
+@media (max-width:520px){.two{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+<header><h1>🗺️ Jejak Dharma Nusantara</h1><div class="hud"><span id="hs">0 poin</span><span id="hk">🧩 0/4</span></div></header>
+<main id="app"></main>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const sh=a=>[...a].sort(()=>Math.random()-.5);
+const TN={pg:"Pilihan Ganda",pgk:"Pilihan Ganda Kompleks",bs:"Benar / Salah",dnd:"Drag and Drop",match:"Menjodohkan",order:"Mengurutkan",essay:"Uraian HOTS"};
+const Z=[
+{n:"Lembah Prasasti",ic:"🏺",bd:"Lencana Yupa Emas",d:"Teori masuknya Hindu-Buddha, Kutai, Tarumanagara",q:[
+{t:"pg",p:25,q:"Prasasti Yupa dari Kerajaan Kutai ditulis dengan aksara dan bahasa…",o:["Arab Melayu","Pallawa dan Sanskerta","Jawa Kuno dan Kawi","Latin dan Belanda"],a:1,ex:"Yupa memakai aksara Pallawa dan bahasa Sanskerta."},
+{t:"pg",p:25,q:"Yupa menyebut Mulawarman memberi sedekah 20.000 ekor sapi kepada kaum brahmana. Makna yang paling tepat adalah…",o:["Kutai sudah menganut Islam","Raja Kutai menjalankan upacara Hindu dan berhubungan dengan kaum brahmana","Kutai menguasai Selat Malaka","Kutai menjadi jajahan Tarumanagara"],a:1,ex:"Sedekah kepada brahmana menunjukkan praktik keagamaan Hindu di istana Kutai."},
+{t:"pgk",p:50,q:"Pilih <b>semua</b> pernyataan yang benar tentang teori masuknya Hindu-Buddha ke Nusantara!",o:["Teori Brahmana: brahmana diundang penguasa lokal untuk upacara legitimasi kekuasaan","Teori Ksatria: penyebaran terjadi melalui perdagangan damai","Teori Waisya: pedagang India berperan utama menyebarkan budaya Hindu-Buddha","Teori Arus Balik: orang Nusantara aktif belajar ke India lalu kembali membawa ajaran","Teori Arus Balik: Nusantara tidak mengalami pengaruh dari India"],a:[0,2,3],ex:"Kunci: A, C, D. Teori Ksatria bertumpu pada penaklukan, bukan perdagangan damai. Arus Balik justru menekankan peran aktif orang Nusantara."}]},
+{n:"Samudra Śrīwijaya",ic:"⛵",bd:"Lencana Samudra Śrīwijaya",d:"Sriwijaya dan Mataram Kuno",q:[
+{t:"bs",p:40,q:"Tentukan benar atau salah setiap pernyataan!",r:[["Sriwijaya berkembang sebagai kerajaan maritim karena menguasai jalur perdagangan Selat Malaka.",1],["Candi Borobudur dibangun oleh Dinasti Syailendra yang menganut Buddha Mahayana.",1],["Candi Prambanan bercorak Buddha dan dibangun pada masa Rakai Pikatan.",0],["Prasasti Kota Kapur ditemukan di Pulau Jawa dan menjadi bukti kekuasaan Sriwijaya di sana.",0]],ex:"Kunci: Benar, Benar, Salah, Salah. Prambanan bercorak Hindu-Siwa. Prasasti Kota Kapur ditemukan di Pulau Bangka."},
+{t:"dnd",p:60,q:"Pindahkan setiap kartu ke kerajaan yang tepat. Ketuk kartu lalu ketuk peti, atau seret kartu ke peti.",b:["Kutai","Tarumanagara","Sriwijaya","Mataram Kuno"],c:[["Yupa",0],["Mulawarman",0],["Prasasti Ciaruteun",1],["Purnawarman",1],["Prasasti Kedukan Bukit",2],["Dapunta Hyang",2],["Candi Borobudur",3]],ex:"Kutai: Yupa, Mulawarman. Tarumanagara: Ciaruteun, Purnawarman. Sriwijaya: Kedukan Bukit, Dapunta Hyang. Mataram Kuno: Borobudur."}]},
+{n:"Takhta Majapahit",ic:"☀️",bd:"Lencana Surya Majapahit",d:"Kediri, Singasari, Majapahit",q:[
+{t:"match",p:50,q:"Jodohkan kolom kiri dengan pasangannya di kolom kanan. Ketuk satu item kiri, lalu item kanan.",m:[["Kitab Nagarakretagama","Mpu Prapanca"],["Kitab Sutasoma (Bhinneka Tunggal Ika)","Mpu Tantular"],["Sumpah Palapa","Gajah Mada"],["Ekspedisi Pamalayu","Kertanegara"],["Pendiri Singasari","Ken Arok"]],ex:"Nagarakretagama: Mpu Prapanca. Sutasoma: Mpu Tantular. Sumpah Palapa: Gajah Mada. Pamalayu: Kertanegara. Singasari: Ken Arok."},
+{t:"order",p:50,q:"Urutkan peristiwa berikut secara kronologis!",o:["Ken Arok mendirikan Singasari (1222)","Ekspedisi Pamalayu (1275)","Serangan Jayakatwang, Singasari runtuh (1292)","Raden Wijaya mendirikan Majapahit (1293)","Sumpah Palapa Gajah Mada (1334)","Hayam Wuruk naik takhta (1350)"],ex:"Urutan benar: 1222, 1275, 1292, 1293, 1334, 1350."}]},
+{n:"Kuil Penjaga Kronik",ic:"👑",bd:"Gelar Penjaga Kronik Nusantara",d:"Boss Battle: Sang Kabut Lupa (HOTS)",q:[
+{t:"pg",p:20,q:"<b>Fase 1: Analisis.</b> Perhatikan tabel.<table><tr><th></th><th>Sriwijaya</th><th>Majapahit</th></tr><tr><td>Basis ekonomi</td><td>Perdagangan laut dan pajak pelabuhan</td><td>Pertanian padi lembah Brantas dan perdagangan rempah</td></tr><tr><td>Pusat kekuasaan</td><td>Palembang (pesisir)</td><td>Trowulan (pedalaman, dekat sungai)</td></tr></table>Simpulan yang paling tepat adalah…",o:["Keduanya kerajaan agraris murni","Sriwijaya bergantung pada kendali jalur laut, Majapahit memadukan kekuatan agraris dan maritim","Majapahit tidak berdagang dengan luar negeri","Sriwijaya tidak bergantung pada perdagangan"],a:1,ex:"Sriwijaya kuat karena mengendalikan jalur laut, sedangkan Majapahit ditopang pertanian sekaligus perdagangan maritim."},
+{t:"essay",p:40,q:"<b>Fase 2: Sebab–akibat.</b> Mengapa kerajaan-kerajaan besar Hindu-Buddha akhirnya melemah? Jelaskan minimal 2 faktor (internal dan eksternal) disertai satu contoh kerajaan untuk tiap faktor.",r:[["Faktor internal tepat (mis. Perang Paregreg, perebutan takhta)",10],["Faktor eksternal tepat (mis. serangan Cola ke Sriwijaya, bangkitnya pelabuhan Islam)",10],["Contoh kerajaan relevan",10],["Hubungan sebab–akibat jelas",10]],ex:"Contoh jawaban: Majapahit melemah karena perebutan takhta (Perang Paregreg), sedangkan Sriwijaya melemah karena serangan Cola dan beralihnya jalur dagang."},
+{t:"essay",p:40,q:"<b>Fase 3: Evaluasi.</b> Semboyan Bhinneka Tunggal Ika berasal dari Kitab Sutasoma karya Mpu Tantular pada masa Majapahit. Apakah nilai itu masih relevan untuk Indonesia saat ini? Berikan 2 alasan dan 1 contoh nyata di lingkunganmu.",r:[["Posisi jelas",10],["Dua alasan logis",15],["Contoh nyata relevan",10],["Terkait konteks sejarah Majapahit",5]],ex:"Jawaban terbuka. Nilai yang kuat: persatuan dalam keberagaman agama dan budaya, termasuk toleransi antara Siwa dan Buddha pada masa Majapahit."}]}
+];
+const S={z:0,i:0,zs:0,sc:[0,0,0,0],pass:[0,0,0,0],un:1,chk:null};
+const R={
+pg:(u,it)=>{let s=-1;u.innerHTML=it.o.map((x,i)=>`<button class="opt">${"ABCD"[i]}. ${x}</button>`).join("");const B=[...u.children];
+B.forEach((b,i)=>b.onclick=()=>{s=i;B.forEach((x,j)=>x.classList.toggle("sel",j==i))});
+return()=>{B.forEach((b,i)=>{if(i==it.a)b.classList.add("ok");else if(i==s)b.classList.add("no")});return s==it.a?it.p:0}},
+pgk:(u,it)=>{const s=new Set;u.innerHTML=it.o.map((x,i)=>`<button class="opt">${"ABCDE"[i]}. ${x}</button>`).join("");const B=[...u.children];
+B.forEach((b,i)=>b.onclick=()=>{s.has(i)?s.delete(i):s.add(i);b.classList.toggle("sel",s.has(i))});
+return()=>{let v=0;B.forEach((b,i)=>{const c=it.a.includes(i);if(c)b.classList.add("ok");else if(s.has(i))b.classList.add("no");if(s.has(i))v+=c?1:-1});return Math.max(0,Math.round(it.p/it.a.length*v))}},
+bs:(u,it)=>{const s=it.r.map(()=>null);u.innerHTML=it.r.map((r,i)=>`<div class="row"><div>${i+1}. ${r[0]}</div><button class="opt" data-i="${i}" data-v="1">Benar</button><button class="opt" data-i="${i}" data-v="0">Salah</button></div>`).join("");
+u.onclick=e=>{const b=e.target.closest(".opt");if(!b)return;const i=+b.dataset.i;s[i]=+b.dataset.v;u.querySelectorAll(`[data-i="${i}"]`).forEach(x=>x.classList.toggle("sel",x===b))};
+return()=>{let c=0;it.r.forEach((r,i)=>{const k=r[1]?1:0;if(s[i]===k)c++;u.querySelectorAll(`[data-i="${i}"]`).forEach(x=>{if(+x.dataset.v===k)x.classList.add("ok");else if(x.classList.contains("sel"))x.classList.add("no")})});return Math.round(it.p*c/it.r.length)}},
+dnd:(u,it)=>{const pl=it.c.map(()=>-1);let sel=-1;
+const draw=()=>{u.innerHTML=`<div class="pool">${it.c.map((c,i)=>pl[i]<0?`<span class="chip${i==sel?" sel":""}" draggable="true" data-i="${i}">${c[0]}</span>`:"").join("")||"<i class='mu'>Semua kartu sudah ditempatkan</i>"}</div><div class="bins">${it.b.map((b,j)=>`<div class="bin" data-j="${j}"><b>${b}</b><br>${it.c.map((c,i)=>pl[i]==j?`<span class="chip" data-i="${i}" data-in="1">${c[0]}</span>`:"").join("")}</div>`).join("")}</div>`};
+draw();
+u.onclick=e=>{const c=e.target.closest(".chip"),bn=e.target.closest(".bin");
+if(c&&c.dataset.in){pl[+c.dataset.i]=-1;draw();return}
+if(c){sel=+c.dataset.i;draw();return}
+if(bn&&sel>=0){pl[sel]=+bn.dataset.j;sel=-1;draw()}};
+u.ondragstart=e=>{const c=e.target.closest(".chip");if(c)e.dataTransfer.setData("text/plain",c.dataset.i)};
+u.ondragover=e=>e.preventDefault();
+u.ondrop=e=>{e.preventDefault();const bn=e.target.closest(".bin"),i=e.dataTransfer.getData("text/plain");if(bn&&i!==""){pl[+i]=+bn.dataset.j;sel=-1;draw()}};
+return()=>{let c=0;it.c.forEach((x,i)=>{if(pl[i]==x[1])c++});return Math.round(it.p*c/it.c.length)}},
+match:(u,it)=>{const n=it.m.length,rs=sh([...Array(n).keys()]),mp=Array(n).fill(-1);let sl=-1;
+const draw=()=>{u.innerHTML=`<div class="two"><div>${it.m.map((m,i)=>`<button class="opt${i==sl?" sel":""}" data-l="${i}">${m[0]}${mp[i]>=0?` → <b>${it.m[mp[i]][1]}</b>`:""}</button>`).join("")}</div><div>${rs.map(r=>`<button class="opt${mp.includes(r)?" used":""}" data-r="${r}">${it.m[r][1]}</button>`).join("")}</div></div>`};
+draw();
+u.onclick=e=>{const b=e.target.closest(".opt");if(!b)return;
+if(b.dataset.l!==undefined){sl=+b.dataset.l;mp[sl]=-1;draw()}
+else if(sl>=0){const r=+b.dataset.r,k=mp.indexOf(r);if(k>=0)mp[k]=-1;mp[sl]=r;sl=-1;draw()}};
+return()=>{let c=0;mp.forEach((r,i)=>{if(r==i)c++});return Math.round(it.p*c/n)}},
+order:(u,it)=>{const n=it.o.length,pool=sh([...Array(n).keys()]);let sq=[];
+const draw=()=>{u.innerHTML=`<p class="mu">Ketuk peristiwa dari yang paling awal. Ketuk lagi pada urutanmu untuk membatalkan.</p><div class="pool">${pool.filter(i=>!sq.includes(i)).map(i=>`<button class="opt" data-p="${i}">${it.o[i]}</button>`).join("")}</div><ol class="seq">${sq.map(i=>`<li><button class="opt sel" data-s="${i}">${it.o[i]}</button></li>`).join("")}</ol>`};
+draw();
+u.onclick=e=>{const b=e.target.closest(".opt");if(!b)return;if(b.dataset.p!==undefined)sq.push(+b.dataset.p);else sq=sq.filter(x=>x!=+b.dataset.s);draw()};
+return()=>{let c=0;sq.forEach((x,i)=>{if(x==i)c++});return Math.round(it.p*c/n)}},
+essay:(u,it)=>{u.innerHTML=`<textarea placeholder="Tulis jawabanmu di sini…"></textarea><p class="mu">Penilaian mandiri atau oleh guru: centang kriteria rubrik yang terpenuhi.</p>${it.r.map((r,i)=>`<label class="rb"><input type="checkbox" data-i="${i}"> ${r[0]} <small>(${r[1]} poin)</small></label>`).join("")}`;
+return()=>{let s=0;u.querySelectorAll("input:checked").forEach(x=>s+=it.r[+x.dataset.i][1]);return s}}
+};
+function hud(){$("#hs").textContent=S.sc.reduce((a,b)=>a+b,0)+" poin";$("#hk").textContent="🧩 "+S.pass.reduce((a,b)=>a+b,0)+"/4"}
+function map(){hud();$("#app").innerHTML=`<div class="card"><h2>Kabut Lupa menghapus ingatan Nusantara</h2><p>Sebuah prasasti kuno memanggilmu ke masa lalu. Kronik Nusantara pecah menjadi 4 keping. Selesaikan tiap zona dengan skor minimal 70 untuk mengumpulkan semua keping sebelum bel berbunyi.</p><p class="mu">Syarat lulus zona: 70 dari 100 poin. Zona 4 terbuka setelah 3 keping terkumpul.</p></div><div class="map">${Z.map((z,j)=>`<button class="node n${j}${j>=S.un?" lock":""}${S.pass[j]?" done":""}" data-j="${j}" ${j>=S.un?"disabled":""}><span class="ic">${S.pass[j]?"✅":j>=S.un?"🔒":z.ic}</span><span><b>Zona ${j+1}: ${z.n}</b><br><small>${z.d}${S.sc[j]?" | skor terbaik "+S.sc[j]:""}</small></span></button>`).join("")}</div>`;
+document.querySelectorAll(".node").forEach(b=>b.onclick=()=>start(+b.dataset.j))}
+function start(z){S.z=z;S.i=0;S.zs=0;$("#app").innerHTML=`<div class="card"><p class="mu" id="qn"></p><div id="body"></div><div id="ui"></div><div id="fb"></div><div id="act"></div></div>`;item()}
+function item(){const Zn=Z[S.z],it=Zn.q[S.i];
+$("#qn").textContent=`${Zn.ic} ${Zn.n}, tantangan ${S.i+1} dari ${Zn.q.length} (${TN[it.t]}), poin zona ${S.zs}`;
+$("#body").innerHTML=`<h2>${it.q}</h2>`;const u=$("#ui");u.className="";$("#fb").innerHTML="";
+S.chk=R[it.t](u,it);
+$("#act").innerHTML=`<button class="pri" id="go">Periksa</button>`;
+$("#go").onclick=()=>{const p=S.chk();S.zs+=p;u.classList.add("lock-ui");
+$("#fb").innerHTML=`<b>${p} dari ${it.p} poin.</b> ${it.ex}`;
+const last=S.i==Zn.q.length-1;$("#act").innerHTML=`<button class="pri" id="nx">${last?"Lihat hasil zona":"Lanjut"}</button>`;
+$("#nx").onclick=()=>{if(last)end();else{S.i++;item()}}}}
+function end(){const z=S.z,ok=S.zs>=70;S.sc[z]=Math.max(S.sc[z],S.zs);if(ok){S.pass[z]=1;S.un=Math.max(S.un,z+2)}hud();
+const fin=ok&&z==3;
+$("#app").innerHTML=`<div class="card"><h2>${fin?"👑 Kronik Nusantara pulih!":ok?"🎉 Zona selesai!":"Belum lulus zona ini"}</h2><p class="big">${S.zs}/100 poin</p><p>${fin?`Kamu resmi bergelar <b>${Z[z].bd}</b>. Total skor: <b>${S.sc.reduce((a,b)=>a+b,0)}/400</b>.`:ok?`Kamu mendapat <b>${Z[z].bd}</b> dan Keping Kronik ${z+1}.`:"Syarat lulus adalah 70 poin. Pelajari lagi materinya, lalu ulangi zona ini."}</p><div id="act">${ok?"":`<button class="pri" id="rt">Ulangi zona</button>`}<button class="${ok?"pri":"sec"}" id="mp">${fin?"Lihat peta":"Kembali ke peta"}</button>${fin?`<button class="sec" id="rs">Main dari awal</button>`:""}</div></div>`;
+$("#mp").onclick=map;if($("#rt"))$("#rt").onclick=()=>start(z);
+if($("#rs"))$("#rs").onclick=()=>{S.sc=[0,0,0,0];S.pass=[0,0,0,0];S.un=1;map()}}
+map();
+</script></body></html>
